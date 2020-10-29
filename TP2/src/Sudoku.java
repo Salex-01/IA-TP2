@@ -1,11 +1,13 @@
-import java.util.Comparator;
 import java.util.LinkedList;
 
 public class Sudoku {
     int[][] grid;
     int[][] solvedGrid;
+    boolean[][][] possibilities;
     int squareSize;
     boolean activateSqares;
+    int constraints;
+    int minCst;
 
     static int[][] deepClone(int[][] array) {
         int[][] res = new int[array.length][array[0].length];
@@ -15,15 +17,144 @@ public class Sudoku {
         return res;
     }
 
-    public Sudoku(int[][] g, boolean s) {
-        grid = g;
-        solvedGrid = new int[grid.length][grid.length];
-        squareSize = (int) Math.sqrt(g.length);
-        activateSqares = s;
+    static boolean[][][] deepClone(boolean[][][] array) {
+        boolean[][][] res = new boolean[array.length][array[0].length][array[0][0].length];
+        for (int i = 0; i < array.length; i++) {
+            for (int j = 0; j < array[0].length; j++) {
+                System.arraycopy(array[i][j], 0, res[i][j], 0, array[0][0].length);
+            }
+        }
+        return res;
     }
 
     public Sudoku(int[][] g) {
         new Sudoku(g, true);
+    }
+
+    public Sudoku(int[][] g, boolean s) {
+        new Sudoku(g, s, null, 0, false, 0, 0);
+    }
+
+    public Sudoku(int[][] g, boolean s, boolean[][][] poss, int minC, boolean computeConstraints, int a, int b) {
+        grid = g;
+        solvedGrid = new int[grid.length][grid.length];
+        activateSqares = s;
+        squareSize = (int) Math.sqrt(g.length);
+        if (poss == null) {
+            possibilities = new boolean[grid.length][grid.length][grid.length];
+            for (int i = 0; i < grid.length; i++) {
+                for (int j = 0; j < grid.length; j++) {
+                    for (int k = 0; k < grid.length; k++) {
+                        possibilities[i][j][k] = ((grid[i][j] == 0) || (grid[i][j] == k + 1));
+                    }
+                }
+            }
+        } else {
+            possibilities = poss;
+            for (int i = 0; i < grid.length; i++) {
+                possibilities[a][b][i] = (grid[a][b] == i + 1);
+            }
+        }
+        AC3();
+        if (computeConstraints) {
+            minCst = computeMaxConstraints();
+            constraints = minC - minCst;
+        }
+    }
+
+    private void AC3() {
+        LinkedList<Constraint> cstr = new LinkedList<>();
+        for (int j = 0; j < grid.length; j++) {
+            for (int i = 0; i < grid.length - 1; i++) {
+                for (int k = i + 1; k < grid.length; k++) {
+                    cstr.add(new Constraint(i, j, k, j));
+                    cstr.add(new Constraint(k, j, i, j));
+                    cstr.add(new Constraint(j, i, j, k));
+                    cstr.add(new Constraint(j, k, j, i));
+                }
+            }
+        }
+        if (activateSqares) {
+            for (int baseI = 0; baseI < grid.length; baseI += squareSize) {
+                for (int baseJ = 0; baseJ < grid.length; baseJ += squareSize) {
+                    for (int k = 0; k < grid.length - 1; k++) {
+                        for (int l = 1; l < grid.length; l++) {
+                            int i1 = k % squareSize;
+                            int j1 = k / squareSize;
+                            int i2 = l % squareSize;
+                            int j2 = l / squareSize;
+                            cstr.add(new Constraint(i1, j1, i2, j2));
+                            cstr.add(new Constraint(i2, j2, i1, j1));
+                        }
+                    }
+                }
+            }
+        }
+        Constraint c;
+        while (!cstr.isEmpty()) {
+            c = cstr.remove(0);
+            boolean tem1 = false;
+            for (int i = 0; i < grid.length; i++) {
+                if (possibilities[c.i1][c.j1][i]) {
+                    boolean tem2 = true;
+                    for (int j = 0; j < grid.length; j++) {
+                        if ((i != j) && (possibilities[c.i2][c.j2][j])) {
+                            tem2 = false;
+                            break;
+                        }
+                    }
+                    if (tem2) {
+                        possibilities[c.i1][c.j1][i] = false;
+                        tem1 = true;
+                    }
+                }
+            }
+            if (tem1) {
+                LinkedList<Constraint> newcstr = new LinkedList<>();
+                int baseI = (c.i1 / squareSize) * squareSize;
+                int baseJ = (c.j1 / squareSize) * squareSize;
+                for (int i = 0; i < grid.length; i++) {
+                    if (i != c.i1) {
+                        checkAndAdd(newcstr, new Constraint(i, c.j1, c.i1, c.j1));
+                    }
+                    if (i != c.j1) {
+                        checkAndAdd(newcstr, new Constraint(c.i1, i, c.i1, c.j1));
+                    }
+                    int ni = i % squareSize;
+                    int nj = i / squareSize;
+                    if ((baseI + ni != c.i1) || (baseJ + nj != c.j1)) {
+                        checkAndAdd(newcstr, new Constraint(baseI + ni, baseJ + nj, c.i1, c.j1));
+                    }
+                }
+            }
+        }
+    }
+
+    private void checkAndAdd(LinkedList<Constraint> list, Constraint c2) {
+        for (Constraint c : list) {
+            if ((c.i1 == c2.i1) && (c.j1 == c2.j1) && (c.i2 == c2.i2) && (c.j2 == c2.j2)) {
+                return;
+            }
+        }
+        list.add(c2);
+    }
+
+    private int computeMaxConstraints() {
+        int result = grid.length;
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid.length; j++) {
+                int tmp = 0;
+                for (int k = 0; k < grid.length; k++) {
+                    if (possibilities[i][j][k]) {
+                        tmp++;
+                    }
+                }
+                if (tmp < result) {
+                    result = tmp;
+                }
+            }
+        }
+        return result;
     }
 
     public int[][] solve() {
@@ -32,12 +163,14 @@ public class Sudoku {
         // Contraintes : toutes les cases doivent être comprises dans [1;n]
         // Backtracking -> MRV + DH + LCV -> AC3
 
+        if (check()) {
+            return grid;
+        }
+
         LinkedList<Sudoku> children = generateChildren();
 
         // Rangement des enfants dans l'ordre de préférence LCV
-        children.sort((Comparator<Sudoku>) (o1, o2) -> {
-
-        });
+        children.sort((o1, o2) -> o2.constraints - o1.constraints);
         int[][] solution;
         while (!children.isEmpty()) {
             solution = children.remove(0).solve();
@@ -46,6 +179,17 @@ public class Sudoku {
             }
         }
         return null;
+    }
+
+    private boolean check() {
+        for (int[] ints : grid) {
+            for (int j = 0; j < grid.length; j++) {
+                if (ints[j] == 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     // Génère les enfants produits par l'assignation de la case choisie par MRV et DH
@@ -86,7 +230,7 @@ public class Sudoku {
                         int baseI = (i / squareSize) * squareSize;
                         int baseJ = (j / squareSize) * squareSize;
                         for (int k = baseI; k < baseI + squareSize; k++) {
-                            for (int l = baseJ; j < baseJ + squareSize; l++) {
+                            for (int l = baseJ; l < baseJ + squareSize; l++) {
                                 if ((k != i) || (l != j)) {
                                     if (grid[k][l] == 0) {
                                         dh++;
@@ -123,13 +267,14 @@ public class Sudoku {
             if (values[bestI][bestJ][k]) {
                 int[][] nGrid = deepClone(grid);
                 nGrid[bestI][bestJ] = k + 1;
-                res.add(new Sudoku(nGrid, activateSqares));
+                res.add(new Sudoku(nGrid, activateSqares, deepClone(possibilities), minCst, true, bestI, bestJ));
             }
         }
         return res;
     }
 
-    public void reset() {
+    public Sudoku reset() {
         solvedGrid = new int[grid.length][grid.length];
+        return this;
     }
 }
