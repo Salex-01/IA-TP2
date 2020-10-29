@@ -8,7 +8,7 @@ public class Main {
         SudokuFileToArray sudoku = new SudokuFileToArray(sudokupath);
         ArrayList<Sudoku> sudokuList = sudoku.creatSudoku();
         int[][] sudoku1 = sudokuList.get(0).grid;
-        int[][] sudoku2 = sudokuList.get(1).grid;
+        int[][] sudoku2 = sudokuList.get(6).grid;
         sudoku.printSudoku(sudoku1);
         sudoku.printSudoku(sudoku2);
 
