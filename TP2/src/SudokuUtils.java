@@ -16,9 +16,10 @@ public class SudokuUtils {
 
     List<Sudoku> createSudoku() {
         try {
+            // cree un scanner pour lire le fichier si il existe
             Scanner s = new Scanner(sudokuFile);
-            while (s.hasNextLine()) {
-                String tmp = s.nextLine();
+            while (s.hasNextLine()) { // tant qu'il y a une ligne a lire dans le fichier
+                String tmp = s.nextLine(); // on recupere la premiere ligne  qui contient la taille du sudoku et la variable activateSquares( true or false)
                 while (tmp.trim().contentEquals("") && s.hasNextLine()) {
                     tmp = s.nextLine().trim();
                     if (!tmp.contentEquals("")) {
@@ -30,7 +31,9 @@ public class SudokuUtils {
                 boolean add = data.size() < 3;
                 int size = parseInt(data.get(0));
                 boolean activateSqares = data.get(1).equals("t");
+                // cree une matrice vide de la taille du sudoku
                 int[][] newSudoku = new int[size][size];
+                // remplis le sudoku avec les valeurs dans le fichier
                 for (int i = 0; i < size; i++) {
                     tmp = s.nextLine().trim();
                     String[] charNumber = tmp.split(" ");
@@ -55,6 +58,7 @@ public class SudokuUtils {
                         }
                     }
                 }
+                // Ajout du nouveau sudoku à la liste
                 if (add) {
                     sudokuList.add(new Sudoku(newSudoku, activateSqares));
                 }
@@ -62,9 +66,10 @@ public class SudokuUtils {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        // renvoie la liste de sudoku
         return sudokuList;
     }
-
+    // affiche une grille de sudoku passe en argument
     static void printSudoku(int[][] sudoku) {
         for (int[] ints : sudoku) {
             System.out.print("|");

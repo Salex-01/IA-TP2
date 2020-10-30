@@ -19,9 +19,11 @@ public class SolverMain {
                     System.exit(-1);
             }
         }
+        // cree une liste de sudoku avec le fichier passe en argument
         SudokuUtils sudokuUtils = new SudokuUtils(sudokupath);
         List<Sudoku> sudokuList = sudokuUtils.createSudoku();
         for (Sudoku s : sudokuList) {
+            // affiche les sudokus suivient de leur solution trouvé par le solver
             SudokuUtils.printSudoku(s.grid);
             String s1 = " ".repeat((s.grid.length * (Integer.toString(s.grid.length).length() + 1) + 1) / 2);
             System.out.println(s1 + "V" + s1);
