@@ -2,6 +2,8 @@ import java.util.Random;
 
 public class GeneratorMain {
     public static void main(String[] args) {
+        // recupere les arguments le premiere argument correspond à la taille du sudoku souhaite (la taille doit forcement etre un carre 9, 16, etc)
+        // et le deuxieme argument correponds à l'attribut activateSquares
         int size = Integer.parseInt(args[0]);
         boolean squares = args[1].toLowerCase().startsWith("t");
         if (Math.sqrt(size) == (int) Math.sqrt(size)) {

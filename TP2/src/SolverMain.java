@@ -9,9 +9,11 @@ public class SolverMain {
         } else {
             sudokupath = args[0];
         }
+        // cree une liste de sudoku avec le fichier passe en argument
         SudokuUtils sudokuUtils = new SudokuUtils(sudokupath);
         List<Sudoku> sudokuList = sudokuUtils.createSudoku();
         for (Sudoku s : sudokuList) {
+            // affiche les sudokus suivient de leur solution trouvé par le solver
             SudokuUtils.printSudoku(s.grid);
             try {
                 SudokuUtils.printSudoku(s.solve(0,""));
