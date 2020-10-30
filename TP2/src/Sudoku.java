@@ -27,12 +27,8 @@ public class Sudoku {
         return res;
     }
 
-    public Sudoku(int[][] g) {
-        new Sudoku(g, true);
-    }
-
     public Sudoku(int[][] g, boolean s) {
-        new Sudoku(g, s, null, 0, false, 0, 0);
+        this(g, s, null, 0, true, 0, 0);
     }
 
     public Sudoku(int[][] g, boolean s, boolean[][][] poss, int minC, boolean computeConstraints, int a, int b) {
@@ -83,8 +79,8 @@ public class Sudoku {
                             int j1 = k / squareSize;
                             int i2 = l % squareSize;
                             int j2 = l / squareSize;
-                            cstr.add(new Constraint(i1, j1, i2, j2));
-                            cstr.add(new Constraint(i2, j2, i1, j1));
+                            checkAndAdd(cstr, new Constraint(baseI + i1, baseJ + j1, baseI + i2, baseJ + j2));
+                            checkAndAdd(cstr, new Constraint(baseI + i2, baseJ + j2, baseI + i1, baseJ + j1));
                         }
                     }
                 }
@@ -94,17 +90,17 @@ public class Sudoku {
         while (!cstr.isEmpty()) {
             c = cstr.remove(0);
             boolean tem1 = false;
-            for (int i = 0; i < grid.length; i++) {
-                if (possibilities[c.i1][c.j1][i]) {
-                    boolean tem2 = true;
-                    for (int j = 0; j < grid.length; j++) {
-                        if ((i != j) && (possibilities[c.i2][c.j2][j])) {
-                            tem2 = false;
+            for (int si = 0; si < grid.length; si++) {
+                if (possibilities[c.i1][c.j1][si]) {
+                    boolean tem2 = false;
+                    for (int ti = 0; ti < grid.length; ti++) {
+                        if ((si != ti) && (possibilities[c.i2][c.j2][ti])) {
+                            tem2 = true;
                             break;
                         }
                     }
-                    if (tem2) {
-                        possibilities[c.i1][c.j1][i] = false;
+                    if (!tem2) {
+                        possibilities[c.i1][c.j1][si] = false;
                         tem1 = true;
                     }
                 }
@@ -131,6 +127,9 @@ public class Sudoku {
     }
 
     private void checkAndAdd(LinkedList<Constraint> list, Constraint c2) {
+        if ((c2.i1 == c2.i2) && (c2.j1 == c2.j2)) {
+            return;
+        }
         for (Constraint c : list) {
             if ((c.i1 == c2.i1) && (c.j1 == c2.j1) && (c.i2 == c2.i2) && (c.j2 == c2.j2)) {
                 return;
@@ -157,7 +156,7 @@ public class Sudoku {
         return result;
     }
 
-    public int[][] solve() {
+    public int[][] solve(int n, String m) {
         // Contraintes : les cases ayant une valeur dans grid doivent avoir la même valeur dans la solution -> grid[x][y]^2 == grid[x][y]*solvedGrid[x][y]
         // Contraintes : toutes les cases d'une même ligne/colonne ou d'un même carré doivent être différentes
         // Contraintes : toutes les cases doivent être comprises dans [1;n]
@@ -172,11 +171,15 @@ public class Sudoku {
         // Rangement des enfants dans l'ordre de préférence LCV
         children.sort((o1, o2) -> o2.constraints - o1.constraints);
         int[][] solution;
+        int a = 0;
         while (!children.isEmpty()) {
-            solution = children.remove(0).solve();
+            System.out.println("D" + n + (n >= 100 ? "\tT" : "\t\tT") + m + a);
+            solution = children.remove(0).solve(n + 1, m + a);
             if (solution != null) {
+                solvedGrid = solution;
                 return solution;
             }
+            a++;
         }
         return null;
     }
@@ -186,6 +189,30 @@ public class Sudoku {
             for (int j = 0; j < grid.length; j++) {
                 if (ints[j] == 0) {
                     return false;
+                }
+            }
+        }
+        for (int i = 0; i < grid.length; i++) {
+            int sumH = 0;
+            int sumV = 0;
+            for (int j = 0; j < grid.length; j++) {
+                sumH += grid[i][j];
+                sumV += grid[j][i];
+            }
+            if ((sumH != sumV) || sumH != (grid.length + 1) * grid.length / 2) {
+                throw new IllegalStateException();
+            }
+        }
+        if (activateSqares) {
+            for (int baseI = 0; baseI < grid.length; baseI += squareSize) {
+                for (int baseJ = 0; baseJ < grid.length; baseJ += squareSize) {
+                    int sumS = 0;
+                    for (int k = 0; k < grid.length; k++) {
+                        sumS += grid[baseI + (k % squareSize)][baseJ + (k / squareSize)];
+                    }
+                    if (sumS != (grid.length + 1) * grid.length / 2) {
+                        throw new IllegalStateException();
+                    }
                 }
             }
         }
