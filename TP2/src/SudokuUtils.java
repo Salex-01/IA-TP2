@@ -18,22 +18,22 @@ public class SudokuUtils {
         try {
             Scanner s = new Scanner(sudokuFile);
             while (s.hasNextLine()) {
-                String data = s.nextLine();
-                while (data.trim().contentEquals("") && s.hasNextLine()) {
-                    data = s.nextLine().trim();
-                    if (!data.contentEquals("")) {
+                String tmp = s.nextLine();
+                while (tmp.trim().contentEquals("") && s.hasNextLine()) {
+                    tmp = s.nextLine().trim();
+                    if (!tmp.contentEquals("")) {
                         break;
                     }
                 }
-                List<String> tmp = Arrays.asList(data.split(" "));
-                tmp.removeIf(s1 -> s1.contentEquals(""));
-
-                int size = parseInt(tmp.get(0));
-                boolean activateSqares = tmp.get(1).equals("t");
+                List<String> data = Arrays.asList(tmp.split(" "));
+                data.removeIf(s1 -> s1.contentEquals(""));
+                boolean add = data.size() < 3;
+                int size = parseInt(data.get(0));
+                boolean activateSqares = data.get(1).equals("t");
                 int[][] newSudoku = new int[size][size];
                 for (int i = 0; i < size; i++) {
-                    data = s.nextLine().trim();
-                    String[] charNumber = data.split(" ");
+                    tmp = s.nextLine().trim();
+                    String[] charNumber = tmp.split(" ");
                     for (int j = 0; j < size; j++) {
                         if ("-".equals(charNumber[j])) {
                             newSudoku[i][j] = 0;
@@ -55,7 +55,9 @@ public class SudokuUtils {
                         }
                     }
                 }
-                sudokuList.add(new Sudoku(newSudoku, activateSqares));
+                if (add) {
+                    sudokuList.add(new Sudoku(newSudoku, activateSqares));
+                }
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -67,11 +69,14 @@ public class SudokuUtils {
         for (int[] ints : sudoku) {
             System.out.print("|");
             for (int j = 0; j < sudoku.length; j++) {
-                System.out.print((ints[j] != 0 ? ints[j] : ".") + "|");
+                if (ints[j] == 0) {
+                    System.out.print("." + " ".repeat(Integer.toString(sudoku.length).length() - 1) + "|");
+                } else {
+                    System.out.print(ints[j] + " ".repeat(Integer.toString(sudoku.length).length() - Integer.toString(ints[j]).length()) + "|");
+                }
             }
             System.out.println();
         }
     }
 
 }
-

@@ -4,11 +4,11 @@ public class GeneratorMain {
     public static void main(String[] args) {
         int size = Integer.parseInt(args[0]);
         boolean squares = args[1].toLowerCase().startsWith("t");
-        if (Math.sqrt(size) == (int) Math.sqrt(size)) {
+        if ((!squares) || (Math.sqrt(size) == (int) Math.sqrt(size))) {
             int root = (int) Math.sqrt(size);
             int[][] grid = new int[size][size];
             Sudoku s = new Sudoku(grid, squares);
-            grid = s.solve(0, "");
+            grid = s.solve(0, "", false, true);
             int limit = (int) (size * Math.sqrt(size));
             System.out.println(limit);
             Random r = new Random();
@@ -16,24 +16,46 @@ public class GeneratorMain {
             int b;
             int c;
             boolean mode;
-            for (int i = 0; i < size; i++) {
-                do {
-                    a = r.nextInt(root);
-                    b = r.nextInt(root);
-                    mode = r.nextBoolean();
-                } while (a == b);
-                for (int j = 0; j < root; j++) {
-                    swap(size, root, grid, a, j, j, mode, b * root);
+            if (squares) {
+                for (int i = 0; i < size; i++) {
+                    do {
+                        a = r.nextInt(root);
+                        b = r.nextInt(root);
+                        mode = r.nextBoolean();
+                    } while (a == b);
+                    for (int j = 0; j < root; j++) {
+                        swap(size, root, grid, a, j, j, mode, b * root);
+                    }
                 }
-            }
-            for (int i = 0; i < size * size; i++) {
-                do {
-                    a = r.nextInt(root);
-                    b = r.nextInt(root);
-                    c = r.nextInt(root);
-                    mode = r.nextBoolean();
-                } while (b == c);
-                swap(size, root, grid, a, b, c, mode, a * root);
+                for (int i = 0; i < size * size; i++) {
+                    do {
+                        a = r.nextInt(root);
+                        b = r.nextInt(root);
+                        c = r.nextInt(root);
+                        mode = r.nextBoolean();
+                    } while (b == c);
+                    swap(size, root, grid, a, b, c, mode, a * root);
+                }
+            } else {
+                for (int i = 0; i < size * size; i++) {
+                    do {
+                        a = r.nextInt(size);
+                        b = r.nextInt(size);
+                        mode = r.nextBoolean();
+                    } while (a == b);
+                    if (mode) {
+                        int[] tmp = grid[a];
+                        grid[a] = grid[b];
+                        grid[b] = tmp;
+                    } else {
+                        int tmp;
+                        for (int j = 0; j < size; j++) {
+                            tmp = grid[j][a];
+                            grid[j][a] = grid[j][b];
+                            grid[j][b] = tmp;
+                        }
+                    }
+                }
             }
             SudokuUtils.printSudoku(grid);
             int x;
