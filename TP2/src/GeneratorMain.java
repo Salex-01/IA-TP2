@@ -27,13 +27,13 @@ public class GeneratorMain {
             }
         }
         if ((!squares) || (Math.sqrt(size) == (int) Math.sqrt(size))) {
+            Random r = new Random();
             int root = (int) Math.sqrt(size);
             int[][] grid = new int[size][size];
+            grid[r.nextInt(size)][r.nextInt(size)] = r.nextInt(size) + 1;
             Sudoku s = new Sudoku(grid, squares);
             grid = s.solve(0, "", false, debug);
             int limit = (int) (size * Math.sqrt(size));
-            System.out.println(limit);
-            Random r = new Random();
             int a;
             int b;
             int c;
@@ -80,6 +80,7 @@ public class GeneratorMain {
                 }
             }
             SudokuUtils.printSudoku(grid);
+            System.out.println();
             int x;
             int y;
             for (int j = 0; j < limit; j++) {
