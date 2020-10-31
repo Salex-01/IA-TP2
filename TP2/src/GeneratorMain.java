@@ -6,13 +6,31 @@ public class GeneratorMain {
         // Le premier correspond à la taille du sudoku à générer
         // Le deuxième correspond à l'attribut activateSquares
         // Si activateSquares est vrai, size doit être un carré parfait
-        int size = Integer.parseInt(args[0]);
-        boolean squares = args[1].toLowerCase().startsWith("t");
+        int size = 9;
+        boolean squares = true;
+        boolean debug = false;
+        for (int i = 0; i < args.length; i += 2) {
+            switch (args[i]) {
+                case "size":
+                    size = Integer.parseInt(args[i + 1]);
+                    break;
+                case "sqr":
+                    squares = args[i + 1].toLowerCase().startsWith("t");
+                    break;
+                case "debug":
+                    debug = args[i + 1].toLowerCase().startsWith("t");
+                    break;
+                default:
+                    System.out.println("Unknown argument \"" + args[i] + "\"");
+                    System.exit(-1);
+                    break;
+            }
+        }
         if ((!squares) || (Math.sqrt(size) == (int) Math.sqrt(size))) {
             int root = (int) Math.sqrt(size);
             int[][] grid = new int[size][size];
             Sudoku s = new Sudoku(grid, squares);
-            grid = s.solve(0, "", false, true);
+            grid = s.solve(0, "", false, debug);
             int limit = (int) (size * Math.sqrt(size));
             System.out.println(limit);
             Random r = new Random();

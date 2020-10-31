@@ -36,7 +36,7 @@ public class SudokuUtils {
                     tmp = s.nextLine().trim();
                     String[] charNumber = tmp.split(" ");
                     for (int j = 0; j < size; j++) {
-                        if ("-".equals(charNumber[j])) {
+                        if (charNumber[j].equals("-")) {
                             newSudoku[i][j] = 0;
                         } else {
                             int number = parseInt(charNumber[j]);

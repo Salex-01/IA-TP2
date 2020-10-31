@@ -17,6 +17,7 @@ public class SolverMain {
                 default:
                     System.out.println("Unknown argument \"" + args[i] + "\"");
                     System.exit(-1);
+                    break;
             }
         }
         // Crée une liste de sudoku avec le fichier passe en argument
